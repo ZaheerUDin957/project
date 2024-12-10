@@ -31,7 +31,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # Input form
 with st.form("chat_form"):
     user_query = st.text_input("Ask a question about the patient:", "")
@@ -55,7 +54,7 @@ if submit_button:
 
                     # Check the response type
                     if data.get("type") == 1:
-                        st.subheader("Response")
+                        st.subheader("Response:")
                         st.markdown(
                             f"""
                             <div style="
@@ -75,84 +74,79 @@ if submit_button:
                             unsafe_allow_html=True
                         )
                     elif data.get("type") == 2:
-                        st.subheader("Response (Tabular Data)")
+                        st.subheader("Response:")
+                        tabular_data = data.get("response")
 
-                        # Display vitals_string if available
-                        vitals_string = data.get("vitals_string")
-                        if vitals_string:
-                            st.markdown(
-                                f"""
-                                <div style="
-                                    background-color: #e0fbfc;
-                                    padding: 15px;
-                                    border-radius: 10px;
-                                    border: 1px solid #3d5a80;
-                                    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-                                    font-family: Arial, sans-serif;
-                                    font-size: 16px;
-                                    color: #3d5a80;
-                                    line-height: 1.6;
-                                ">
-                                {vitals_string}
-                                </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
+                        if tabular_data:  # Check if tabular_data exists
+                            # Display vitals_string if available
+                            vitals_string = data.get("vitals_string")
+                            if vitals_string:
+                                st.markdown(
+                                    f"""
+                                    <div style="
+                                        background-color: #e0fbfc;
+                                        padding: 15px;
+                                        border-radius: 10px;
+                                        border: 1px solid #3d5a80;
+                                        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 16px;
+                                        color: #3d5a80;
+                                        line-height: 1.6;
+                                    ">
+                                    {vitals_string}
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
 
-                        # Convert response to DataFrame and display as a styled table
-                        tabular_data = data.get("response", {})
-                        if tabular_data:
+                            # Convert response to DataFrame and display as a styled table
                             if isinstance(tabular_data, dict):
                                 df = pd.DataFrame(
                                     tabular_data.items(),
                                     columns=["Parameter", "Value"]
                                 )
-                                st.markdown(f"""
-            <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">
-                <div>
-                {df.style.set_table_styles(
-                    [
-                        {
-                            "selector": "thead th",
-                            "props": [
-                                ("background-color", "#3d5a80"),
-                                ("color", "white"),
-                                ("font-size", "16px"),
-                                ("text-align", "center"),
-                            ],
-                        },
-                        {
-                            "selector": "tbody td",
-                            "props": [
-                                ("background-color", "#f0f8ff"),
-                                ("color", "#293241"),
-                                ("text-align", "center"),
-                                ("padding", "10px"),
-                            ],
-                        },
-                        {
-                            "selector": "tbody tr:nth-child(even) td",
-                            "props": [("background-color", "#eaf4fc")],
-                        },
-                    ]
-                ).hide(axis="index").to_html()}
-                
-            """,
-            unsafe_allow_html=True
-        )
+                                st.markdown(
+                                    df.style.set_table_styles(
+                                        [
+                                            {
+                                                "selector": "thead th",
+                                                "props": [
+                                                    ("background-color", "#3d5a80"),
+                                                    ("color", "white"),
+                                                    ("font-size", "16px"),
+                                                    ("text-align", "center"),
+                                                ],
+                                            },
+                                            {
+                                                "selector": "tbody td",
+                                                "props": [
+                                                    ("background-color", "#f0f8ff"),
+                                                    ("color", "#293241"),
+                                                    ("text-align", "center"),
+                                                    ("padding", "10px"),
+                                                ],
+                                            },
+                                            {
+                                                "selector": "tbody tr:nth-child(even) td",
+                                                "props": [("background-color", "#eaf4fc")],
+                                            },
+                                        ]
+                                    ).hide(axis="index").to_html(),
+                                    unsafe_allow_html=True
+                                )
                             else:
                                 st.warning("Invalid format for type 2 response.")
                         else:
-                            st.warning("No data found.")
-
+                            st.warning("Data not found.")
 
                     elif data.get("type") == 3:
-                        st.subheader("Response (Radiology Reports)")
+                        st.subheader("Response:")
 
                         response_data = data.get("response", [])
 
                         if not response_data:  # Check if response is empty
-                            st.warning("No data found.")
+                            st.warning("Data not found.")
                         else:
                             for idx, item in enumerate(response_data):
                                 with st.expander(f"Report {idx + 1}: {item.get('ResultType', 'Unknown')}"):
@@ -168,7 +162,7 @@ if submit_button:
                                         ">
                                         <strong>Report Data:</strong><br>
                                         {item.get("ReportData", "No Report Data available.")}
-                                        
+                                        </div>
                                         """,
                                         unsafe_allow_html=True
                                     )
