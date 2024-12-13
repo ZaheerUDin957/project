@@ -88,7 +88,7 @@ with st.sidebar:
 # Input form
 with st.form("chat_form"):
     st.markdown('<p style="color: #EF4444; font-size: 20px;">Ask a question about the patient:</p>', unsafe_allow_html=True)
-    user_query = st.text_input("Ask a question about the patient", key="user_query")
+    user_query = st.text_input(" ", key="user_query")
     submit_button = st.form_submit_button("Submit")
 
 # Process the query with a loader
