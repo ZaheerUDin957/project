@@ -1,19 +1,78 @@
 import streamlit as st
+import base64
+import streamlit as st
 import requests
 import pandas as pd
 import time
 
+# Encode the image in base64
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# Load the logo image
+logo_base64 = get_base64_image("logo.png")
+
+# Sidebar styling for logo
+st.sidebar.markdown(f"""
+    <style>
+        .sidebar-logo {{
+            text-align: left;
+            # padding: 10px 0;
+        }}
+        .sidebar-logo img {{
+            width: 80px;
+            # margin-left: 10px;
+        }}
+    </style>
+    <div class="sidebar-logo">
+        <img src="data:image/png;base64,{logo_base64}" alt="Cloud Solutions Logo">
+    </div>
+""", unsafe_allow_html=True)
+
+# Main bar styling for text
+st.markdown(f"""
+    <style>
+        .main-container {{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+        }}
+        h1 {{
+            font-size: 40px;
+            text-align: center;
+            margin: 0;
+        }}
+        h2 {{
+            font-size: 20px;
+            margin: 0;
+        }}
+        h2 .cloud {{
+            color: black;
+        }}
+        h2 .solutions {{
+            color: #EF4444;
+        }}
+    </style>
+    <div class="main-container">
+        <h2>
+            <span class="cloud">CLOUD</span> <span class="solutions">SOLUTIONS</span>
+        </h2>
+    </div>
+""", unsafe_allow_html=True)
 
 # App title with color
 st.markdown(
-    "<h1 style='color: #3d5a80;'>Smart-ehr</h1>",
+    "<h1 style='color: #EF4444;'>Smart-EHR Chat Interface</h1>",
     unsafe_allow_html=True
 )
+
 
 # Sidebar for Patient ID
 with st.sidebar:
     st.markdown(
-        "<h2 style='color: #293241;'>Select Patient ID</h2>",
+        "<h2 style='color: #EF4444;'>Select Patient ID</h2>",
         unsafe_allow_html=True
     )
     patient_id = st.selectbox(
@@ -26,15 +85,10 @@ with st.sidebar:
         index=17  # Default to patient_id 2820191
     )
 
-# Main content
-st.markdown(
-    "<h2 style='color: #3d5a80;'>Chat Interface</h2>",
-    unsafe_allow_html=True
-)
-
 # Input form
 with st.form("chat_form"):
-    user_query = st.text_input("Ask a question about the patient:", "")
+    st.markdown('<p style="color: #EF4444; font-size: 20px;">Ask a question about the patient:</p>', unsafe_allow_html=True)
+    user_query = st.text_input("Ask a question about the patient", key="user_query")
     submit_button = st.form_submit_button("Submit")
 
 # Process the query with a loader
@@ -55,94 +109,33 @@ if submit_button:
 
                     # Check the response type
                     if data.get("type") == 1:
-                        st.subheader("Response:")
-                        st.markdown(
-                            f"""
-                            <div style="
-                                background-color: #e0fbfc;
-                                padding: 15px;
-                                border-radius: 10px;
-                                border: 1px solid #3d5a80;
-                                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-                                font-family: Arial, sans-serif;
-                                font-size: 16px;
-                                color: #3d5a80;
-                                line-height: 1.6;
-                            ">
-                            {data.get("response", "No response provided.")}
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
+                        st.markdown("<p style='color: #EF4444; font-size: 20px; font-weight: bold '>Response</p>", unsafe_allow_html=True)
+                        st.markdown(f"{data.get('response', 'No response provided.')}")
+
                     elif data.get("type") == 2:
-                        st.subheader("Response:")
+                        st.markdown("<p style='color: #EF4444; font-size: 20px; font-weight: bold '>Response</p>", unsafe_allow_html=True)
                         tabular_data = data.get("response")
 
                         if tabular_data:  # Check if tabular_data exists
                             # Display vitals_string if available
                             vitals_string = data.get("vitals_string")
                             if vitals_string:
-                                st.markdown(
-                                    f"""
-                                    <div style="
-                                        background-color: #e0fbfc;
-                                        padding: 15px;
-                                        border-radius: 10px;
-                                        border: 1px solid #3d5a80;
-                                        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-                                        font-family: Arial, sans-serif;
-                                        font-size: 16px;
-                                        color: #3d5a80;
-                                        line-height: 1.6;
-                                    ">
-                                    {vitals_string}
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True
-                                )
+                                st.markdown(vitals_string)
 
-                            # Convert response to DataFrame and display as a styled table
+                            # Convert response to DataFrame and display as a table
                             if isinstance(tabular_data, dict):
                                 df = pd.DataFrame(
                                     tabular_data.items(),
                                     columns=["Parameter", "Value"]
                                 )
-                                st.markdown(
-                                    df.style.set_table_styles(
-                                        [
-                                            {
-                                                "selector": "thead th",
-                                                "props": [
-                                                    ("background-color", "#3d5a80"),
-                                                    ("color", "white"),
-                                                    ("font-size", "16px"),
-                                                    ("text-align", "center"),
-                                                ],
-                                            },
-                                            {
-                                                "selector": "tbody td",
-                                                "props": [
-                                                    ("background-color", "#f0f8ff"),
-                                                    ("color", "#293241"),
-                                                    ("text-align", "center"),
-                                                    ("padding", "10px"),
-                                                ],
-                                            },
-                                            {
-                                                "selector": "tbody tr:nth-child(even) td",
-                                                "props": [("background-color", "#eaf4fc")],
-                                            },
-                                        ]
-                                    ).hide(axis="index").to_html(),
-                                    unsafe_allow_html=True
-                                )
+                                st.markdown(df.to_html(), unsafe_allow_html=True)
                             else:
                                 st.warning("Invalid format for type 2 response.")
                         else:
                             st.warning("Data not found.")
 
                     elif data.get("type") == 3:
-                        st.subheader("Response:")
+                        st.markdown("<p style='color: #EF4444; font-size: 20px; font-weight: bold '>Response</p>", unsafe_allow_html=True)
 
                         response_data = data.get("response", [])
 
@@ -151,22 +144,8 @@ if submit_button:
                         else:
                             for idx, item in enumerate(response_data):
                                 with st.expander(f"Report {idx + 1}: {item.get('ResultType', 'Unknown')}"):
-                                    # Display ReportData in a blue box
-                                    st.markdown(
-                                        f"""
-                                        <div style="
-                                            background-color: #3d5a80;
-                                            color: white;
-                                            padding: 15px;
-                                            border-radius: 10px;
-                                            font-size: 16px;
-                                        ">
-                                        <strong>Report Data:</strong><br>
-                                        {item.get("ReportData", "No Report Data available.")}
-                                        </div>
-                                        """,
-                                        unsafe_allow_html=True
-                                    )
+                                    # Display ReportData
+                                    st.markdown(f"<strong>Report Data:</strong><br>{item.get('ReportData', 'No Report Data available.')}")
 
                                     # Create a table for other keys
                                     table_data = {
@@ -180,35 +159,7 @@ if submit_button:
                                             table_data.items(),
                                             columns=["Parameter", "Value"]
                                         )
-                                        st.markdown(
-                                            df.style.set_table_styles(
-                                                [
-                                                    {
-                                                        "selector": "thead th",
-                                                        "props": [
-                                                            ("background-color", "#3d5a80"),
-                                                            ("color", "white"),
-                                                            ("font-size", "16px"),
-                                                            ("text-align", "center"),
-                                                        ],
-                                                    },
-                                                    {
-                                                        "selector": "tbody td",
-                                                        "props": [
-                                                            ("background-color", "#f0f8ff"),
-                                                            ("color", "#293241"),
-                                                            ("text-align", "center"),
-                                                            ("padding", "10px"),
-                                                        ],
-                                                    },
-                                                    {
-                                                        "selector": "tbody tr:nth-child(even) td",
-                                                        "props": [("background-color", "#eaf4fc")],
-                                                    },
-                                                ]
-                                            ).hide(axis="index").to_html(),
-                                            unsafe_allow_html=True
-                                        )
+                                        st.markdown(df.to_html(), unsafe_allow_html=True)
                     else:
                         st.error("Unknown response type.")
                 else:
