@@ -68,23 +68,33 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-# Sidebar for Patient ID
-with st.sidebar:
-    st.markdown(
-        "<h2 style='color: #EF4444;'>Select Patient ID</h2>",
-        unsafe_allow_html=True
-    )
-    patient_id = st.selectbox(
-        "Patient ID:",
-        options=[
+patient_ids = [
             430725, 3365563, 4096834, 1224272, 2279340, 2416237, 2870262, 953132,
             872210, 2009411, 3053583, 2519226, 1141505, 1958758, 898099, 4604718,
             5021273, 2820191, 4937867, 5004093, 876079
-        ],
+        ]
+patient_names = [
+    "أحمد المنصور", "فاطمة الحربي", "عمر الفاروق", "عائشة الزهران",
+    "حسن الجابري", "ليلى المطيري", "علي النجار", "زينب البخاري",
+    "خالد الخليفة", "رانية البصري", "يوسف الحداد", "مريم السالم",
+    "عبدالله القاضي", "أميرة الحسن", "نور الصديق", "سيف الحكيم",
+    "هدى الفيصل", "إبراهيم الشيخ", "زارة التميمي", "فيصل اليمامي",
+    "رامي الأحمدي"
+]
+patient_data = {pid: name for pid, name in zip(patient_ids, patient_names)}
+name_to_id = {name: pid for pid, name in patient_data.items()}
+# Sidebar for Patient ID
+with st.sidebar:
+    st.markdown(
+        "<h2 style='color: #EF4444;'>Select Patient Name</h2>",
+        unsafe_allow_html=True
+    )
+    selected_name = st.selectbox(
+        "Patient Name:",
+        options=patient_names,
         index=17  # Default to patient_id 2820191
     )
-
+selected_patient_id = name_to_id[selected_name]
 # Input form
 with st.form("chat_form"):
     st.markdown('<p style="color: #EF4444; font-size: 20px;">Ask a question about the patient:</p>', unsafe_allow_html=True)
@@ -100,7 +110,7 @@ if submit_button:
             time.sleep(1)  # Remove this in production
 
             # Construct the URL with the selected patient_id
-            url = f"https://smart-ehr-03-542808340038.us-central1.run.app/api/chatbot?query={user_query}&patient_id={patient_id}"
+            url = f"https://smart-ehr-03-542808340038.us-central1.run.app/api/chatbot?query={user_query}&patient_id={selected_patient_id}"
 
             try:
                 response = requests.get(url)
